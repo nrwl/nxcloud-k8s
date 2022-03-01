@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nx-cloud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nx-cloud
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 300
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
+  template:
+    metadata:
+      labels:
+        app: nx-cloud
+    spec:
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: cloud-volume
+      containers:
+        - name: nx-cloud
+          image: nxprivatecloud/nxcloud:latest
+          ports:
+            - containerPort: 8081
+          volumeMounts:
+            - mountPath: /data
+              name: data
+          env:
+            - name: NX_CLOUD_APP_URL
+              value: https://EXTERNAL_URL
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cloud
+                  key: ADMIN_PASSWORD

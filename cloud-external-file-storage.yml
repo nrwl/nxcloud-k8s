@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nx-cloud
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nx-cloud
+  revisionHistoryLimit: 5
+  progressDeadlineSeconds: 300
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 0
+  template:
+    metadata:
+      labels:
+        app: nx-cloud
+    spec:
+      containers:
+        - name: nx-cloud
+          image: nxprivatecloud/nxcloud:next
+          ports:
+            - containerPort: 8081
+          env:
+            - name: NX_CLOUD_APP_URL
+              value: https://EXTERNAL_URL
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: cloud
+                  key: ADMIN_PASSWORD
+            - name: NX_CLOUD_MONGO_SERVER_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: cloud
+                  key: NX_CLOUD_MONGO_SERVER_ENDPOINT
+            - name: AWS_S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: cloud
+                  key: AWS_S3_ACCESS_KEY_ID
+            - name: AWS_S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cloud
+                  key: AWS_S3_SECRET_ACCESS_KEY
+            - name: AWS_S3_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: cloud
+                  key: AWS_S3_BUCKET
